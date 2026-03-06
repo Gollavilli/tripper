@@ -4,6 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Japan Trip 2026 🇯🇵</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f9fafb}
@@ -15,396 +17,456 @@
 </head>
 <body>
 <div id="root"></div>
-<script type="module">
-import{createElement as h,useState,useMemo,Fragment}from'https://esm.sh/react@18';
-import{createRoot}from'https://esm.sh/react-dom@18/client';
-import htm from'https://esm.sh/htm@3';
-const html=htm.bind(h);
+<script>
+var h = React.createElement;
+var useState = React.useState;
+var useMemo = React.useMemo;
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
 
-const INIT_PEOPLE=[
-  {id:1,name:'Chai',color:'#DC2626'},
-  {id:2,name:'Alex',color:'#7C3AED'},
-  {id:3,name:'Sam', color:'#2563EB'},
-];
-const INIT_EXPENSES=[
-  {id:1,title:'Return Flights',            amount:1500,paidById:1,splitWithIds:[1,2,3],category:'✈️ Transport',    date:'Apr 1'},
-  {id:2,title:'Tokyo Hotel (3 nights)',    amount:600, paidById:2,splitWithIds:[1,2,3],category:'🏨 Accommodation',date:'Apr 1'},
-  {id:3,title:'Shinkansen Passes',         amount:240, paidById:1,splitWithIds:[1,2,3],category:'✈️ Transport',    date:'Apr 4'},
-  {id:4,title:'Kyoto Hotel (3 nights)',    amount:480, paidById:3,splitWithIds:[1,2,3],category:'🏨 Accommodation',date:'Apr 5'},
-  {id:5,title:'TeamLab Borderless',        amount:90,  paidById:1,splitWithIds:[1,2,3],category:'🎭 Activities',   date:'Apr 2'},
-  {id:6,title:'Osaka Food Tour',           amount:150, paidById:2,splitWithIds:[1,2,3],category:'🍜 Food',         date:'Apr 8'},
-  {id:7,title:'Universal Studios Tickets', amount:210, paidById:3,splitWithIds:[1,2,3],category:'🎭 Activities',   date:'Apr 9'},
-];
-const INIT_ITINERARY=[
-  {id:1,date:'Apr 1',day:'Day 1',city:'Tokyo', emoji:'🗼',activities:[
-    {id:1,time:'14:00',title:'Arrive at Narita Airport',   type:'transport',    note:'Take Narita Express to Shinjuku (~90 min)'},
-    {id:2,time:'17:30',title:'Hotel Check-in — Shinjuku',  type:'accommodation',note:''},
-    {id:3,time:'19:30',title:'Dinner at Omoide Yokocho',   type:'food',         note:'Try yakitori skewers in the atmospheric alley!'},
-  ]},
-  {id:2,date:'Apr 2',day:'Day 2',city:'Tokyo', emoji:'🗼',activities:[
-    {id:1,time:'09:00',title:'Senso-ji Temple, Asakusa',   type:'culture',  note:'Go early to avoid crowds. Get an omamori charm!'},
-    {id:2,time:'11:30',title:'Akihabara — Electric Town',  type:'explore',  note:'Anime, electronics, and arcades'},
-    {id:3,time:'14:00',title:'TeamLab Borderless',         type:'activity', note:'Pre-book tickets! Allow 2–3 hrs'},
-    {id:4,time:'19:00',title:'Shibuya Crossing & Dinner',  type:'explore',  note:"View the crossing from Mag's Park above"},
-  ]},
-  {id:3,date:'Apr 3',day:'Day 3',city:'Tokyo', emoji:'🗼',activities:[
-    {id:1,time:'09:00',title:'Meiji Shrine',               type:'culture', note:'Beautiful forested shrine in the city'},
-    {id:2,time:'11:00',title:'Harajuku — Takeshita Street',type:'explore', note:'Wild fashion, crepes, and fun'},
-    {id:3,time:'14:00',title:'Tsukiji Outer Market',       type:'food',    note:'Fresh sushi, tamagoyaki, and street food'},
-    {id:4,time:'18:30',title:'Shinjuku Golden Gai',        type:'explore', note:'Hundreds of tiny atmospheric retro bars'},
-  ]},
-  {id:4,date:'Apr 4',day:'Day 4',city:'Hakone',emoji:'🗻',activities:[
-    {id:1,time:'09:00',title:'Depart Tokyo → Hakone',      type:'transport',   note:'Romancecar from Shinjuku (~90 min)'},
-    {id:2,time:'12:00',title:'Hakone Open Air Museum',     type:'culture',     note:'Outdoor sculpture park with stunning Fuji views'},
-    {id:3,time:'15:00',title:'Mt. Fuji view at Lake Ashi', type:'sightseeing', note:'Take the ropeway for elevated views'},
-    {id:4,time:'18:30',title:'Onsen at Ryokan',            type:'relaxation',  note:'Traditional Japanese inn — soak & unwind'},
-  ]},
-  {id:5,date:'Apr 5',day:'Day 5',city:'Kyoto', emoji:'⛩️',activities:[
-    {id:1,time:'10:00',title:'Shinkansen to Kyoto',        type:'transport',note:'~2.5 hrs from Odawara'},
-    {id:2,time:'13:30',title:'Fushimi Inari Shrine',       type:'culture',  note:'10,000 torii gates! Hike up for views. 2–3 hrs'},
-    {id:3,time:'17:00',title:'Gion District stroll',       type:'explore',  note:'Look out for maiko / geishas in the evening'},
-    {id:4,time:'19:30',title:'Nishiki Market dinner',      type:'food',     note:'Tofu, pickles, and local street food'},
-  ]},
-  {id:6,date:'Apr 6',day:'Day 6',city:'Kyoto', emoji:'⛩️',activities:[
-    {id:1,time:'07:30',title:'Arashiyama Bamboo Grove',    type:'sightseeing',note:'Go at dawn — magical and crowd-free!'},
-    {id:2,time:'09:30',title:'Tenryu-ji Zen Garden',       type:'culture',    note:'UNESCO World Heritage garden'},
-    {id:3,time:'13:00',title:'Kinkaku-ji (Golden Pavilion)',type:'culture',   note:'Iconic gold-leaf temple reflected on a pond'},
-    {id:4,time:'16:00',title:"Philosopher's Path walk",    type:'explore',    note:'Canal lined with cherry blossoms 🌸'},
-  ]},
-  {id:7,date:'Apr 7',day:'Day 7',city:'Kyoto', emoji:'⛩️',activities:[
-    {id:1,time:'09:00',title:'Nijo Castle',                type:'culture', note:"Ninja-proof 'nightingale floors'!"},
-    {id:2,time:'11:30',title:'Kyoto Imperial Palace',      type:'culture', note:'Free to enter the extensive grounds'},
-    {id:3,time:'14:30',title:'Tea ceremony class',         type:'activity',note:'Book in advance. ~1.5 hrs'},
-    {id:4,time:'19:00',title:'Farewell Kyoto Izakaya',     type:'food',    note:''},
-  ]},
-  {id:8,date:'Apr 8',day:'Day 8',city:'Osaka', emoji:'🏙️',activities:[
-    {id:1,time:'10:00',title:'Shinkansen to Osaka',        type:'transport',note:'Only 15 min from Kyoto!'},
-    {id:2,time:'11:30',title:'Osaka Castle',               type:'culture', note:'Lovely grounds + museum inside'},
-    {id:3,time:'14:30',title:'Dotonbori — Street Food',    type:'food',    note:'Try takoyaki, okonomiyaki, and kushikatsu!'},
-    {id:4,time:'17:30',title:'Kuromon Ichiba Market',      type:'food',    note:"'Osaka's kitchen' — fresh seafood & snacks"},
-    {id:5,time:'20:00',title:'Namba at night',             type:'explore', note:''},
-  ]},
-  {id:9,date:'Apr 9',day:'Day 9',city:'Osaka', emoji:'🏙️',activities:[
-    {id:1,time:'09:00',title:'Universal Studios Japan',    type:'activity',note:'Nintendo World, Harry Potter & more! Full day'},
-    {id:2,time:'18:00',title:'Final shopping — Don Quijote',type:'explore',note:'Best for souvenirs, snacks & cosmetics'},
-    {id:3,time:'20:30',title:'Group farewell dinner 🥂',   type:'food',   note:''},
-  ]},
-  {id:10,date:'Apr 10',day:'Day 10',city:'Osaka',emoji:'🏙️',activities:[
-    {id:1,time:'07:00',title:'Transfer to Kansai Airport', type:'transport',note:'Allow 60+ mins for check-in and security'},
-    {id:2,time:'11:00',title:'Depart Japan 🛫',            type:'transport',note:'Sayonara, Japan! またね 🇯🇵'},
-  ]},
-];
-const INIT_PLACES=[
-  {id:1, name:'Senso-ji Temple',        city:'Tokyo', category:'Culture',   emoji:'⛩️',description:"Tokyo's oldest and most iconic temple in Asakusa",          visited:false,starred:true },
-  {id:2, name:'Shibuya Crossing',       city:'Tokyo', category:'Iconic',    emoji:'🚦',description:"The world's busiest pedestrian crossing",                   visited:false,starred:true },
-  {id:3, name:'TeamLab Borderless',     city:'Tokyo', category:'Art',       emoji:'✨',description:'Mesmerising immersive digital art museum',                  visited:false,starred:true },
-  {id:4, name:'Meiji Shrine',           city:'Tokyo', category:'Culture',   emoji:'🌲',description:'Serene Shinto shrine surrounded by forested park',           visited:false,starred:false},
-  {id:5, name:'Tsukiji Market',         city:'Tokyo', category:'Food',      emoji:'🐟',description:'World-famous seafood and street food market',                visited:false,starred:false},
-  {id:6, name:'Akihabara',              city:'Tokyo', category:'Shopping',  emoji:'🎮',description:'Electric Town for electronics, anime, and arcades',          visited:false,starred:false},
-  {id:7, name:'Harajuku',               city:'Tokyo', category:'Shopping',  emoji:'👗',description:'Wild fashion district and Takeshita Street',                visited:false,starred:false},
-  {id:8, name:'Golden Gai, Shinjuku',   city:'Tokyo', category:'Nightlife', emoji:'🍶',description:'Hundreds of tiny atmospheric retro bars',                   visited:false,starred:false},
-  {id:9, name:'Mt. Fuji View (Ashi)',   city:'Hakone',category:'Nature',    emoji:'🗻',description:'Iconic view of Mt. Fuji reflected in Lake Ashi',            visited:false,starred:true },
-  {id:10,name:'Hakone Open Air Museum', city:'Hakone',category:'Art',       emoji:'🖼️',description:'Outdoor sculpture park with spectacular Fuji views',        visited:false,starred:false},
-  {id:11,name:'Onsen (Hot Springs)',    city:'Hakone',category:'Relaxation',emoji:'♨️',description:'Traditional Japanese hot spring bathing at a Ryokan',       visited:false,starred:true },
-  {id:12,name:'Fushimi Inari Shrine',   city:'Kyoto', category:'Culture',   emoji:'⛩️',description:'Thousands of bright red torii gates climbing the mountain', visited:false,starred:true },
-  {id:13,name:'Arashiyama Bamboo Grove',city:'Kyoto', category:'Nature',    emoji:'🎋',description:'Ethereal bamboo forest walk — best visited at dawn',        visited:false,starred:true },
-  {id:14,name:'Kinkaku-ji',             city:'Kyoto', category:'Culture',   emoji:'✨',description:'Zen temple covered in gold leaf, reflected on a pond',      visited:false,starred:true },
-  {id:15,name:'Gion District',          city:'Kyoto', category:'Culture',   emoji:'👘',description:'Traditional geisha district with preserved machiya',        visited:false,starred:false},
-  {id:16,name:"Philosopher's Path",     city:'Kyoto', category:'Nature',    emoji:'🌸',description:'Stone canal path lined with cherry blossom trees',          visited:false,starred:false},
-  {id:17,name:'Nijo Castle',            city:'Kyoto', category:'Culture',   emoji:'🏯',description:"UNESCO castle famous for its 'nightingale floors'",         visited:false,starred:false},
-  {id:18,name:'Dotonbori',              city:'Osaka', category:'Food',      emoji:'🦞',description:"Neon-lit canal district — Osaka's street food paradise",    visited:false,starred:true },
-  {id:19,name:'Osaka Castle',           city:'Osaka', category:'Culture',   emoji:'🏯',description:'Iconic 16th-century castle with beautiful park grounds',    visited:false,starred:false},
-  {id:20,name:'Universal Studios Japan',city:'Osaka', category:'Activity',  emoji:'🎢',description:'Theme park with Nintendo World and Harry Potter world',     visited:false,starred:false},
-  {id:21,name:'Kuromon Ichiba Market',  city:'Osaka', category:'Food',      emoji:'🥘',description:"Lively local market — 'Osaka's kitchen'",                  visited:false,starred:false},
-  {id:22,name:'Namba District',         city:'Osaka', category:'Nightlife', emoji:'🌃',description:"Heart of Osaka's nightlife, shopping and entertainment",    visited:false,starred:false},
+var INIT_PEOPLE = [
+  {id:1, name:'Chai', color:'#DC2626'},
+  {id:2, name:'Alex', color:'#7C3AED'},
+  {id:3, name:'Sam',  color:'#2563EB'}
 ];
 
-const EXP_CATS=['✈️ Transport','🏨 Accommodation','🍜 Food','🎭 Activities','🛍️ Shopping','💊 Medical','📱 Misc'];
-const COLORS=['#DC2626','#7C3AED','#2563EB','#059669','#D97706','#DB2777'];
-const ACT_EMOJI={transport:'🚅',accommodation:'🏨',food:'🍜',culture:'⛩️',explore:'🗺️',activity:'🎭',sightseeing:'📸',relaxation:'♨️'};
+var INIT_EXPENSES = [
+  {id:1, title:'Return Flights',            amount:1500, paidById:1, splitWithIds:[1,2,3], category:'✈️ Transport',     date:'Apr 1'},
+  {id:2, title:'Tokyo Hotel (3 nights)',    amount:600,  paidById:2, splitWithIds:[1,2,3], category:'🏨 Accommodation', date:'Apr 1'},
+  {id:3, title:'Shinkansen Passes',         amount:240,  paidById:1, splitWithIds:[1,2,3], category:'✈️ Transport',     date:'Apr 4'},
+  {id:4, title:'Kyoto Hotel (3 nights)',    amount:480,  paidById:3, splitWithIds:[1,2,3], category:'🏨 Accommodation', date:'Apr 5'},
+  {id:5, title:'TeamLab Borderless',        amount:90,   paidById:1, splitWithIds:[1,2,3], category:'🎭 Activities',    date:'Apr 2'},
+  {id:6, title:'Osaka Food Tour',           amount:150,  paidById:2, splitWithIds:[1,2,3], category:'🍜 Food',          date:'Apr 8'},
+  {id:7, title:'Universal Studios Tickets', amount:210,  paidById:3, splitWithIds:[1,2,3], category:'🎭 Activities',    date:'Apr 9'}
+];
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
+var INIT_ITINERARY = [
+  {id:1,  date:'Apr 1',  day:'Day 1',  city:'Tokyo',  emoji:'🗼', activities:[
+    {id:1, time:'14:00', title:'Arrive at Narita Airport',    type:'transport',     note:'Take Narita Express to Shinjuku (~90 min)'},
+    {id:2, time:'17:30', title:'Hotel Check-in — Shinjuku',   type:'accommodation', note:''},
+    {id:3, time:'19:30', title:'Dinner at Omoide Yokocho',    type:'food',          note:'Try yakitori skewers in the atmospheric alley!'}
+  ]},
+  {id:2,  date:'Apr 2',  day:'Day 2',  city:'Tokyo',  emoji:'🗼', activities:[
+    {id:1, time:'09:00', title:'Senso-ji Temple, Asakusa',    type:'culture',  note:'Go early to avoid crowds. Get an omamori charm!'},
+    {id:2, time:'11:30', title:'Akihabara — Electric Town',   type:'explore',  note:'Anime, electronics, and arcades'},
+    {id:3, time:'14:00', title:'TeamLab Borderless',          type:'activity', note:'Pre-book tickets! Allow 2–3 hrs'},
+    {id:4, time:'19:00', title:'Shibuya Crossing & Dinner',   type:'explore',  note:"View the crossing from Mag's Park above"}
+  ]},
+  {id:3,  date:'Apr 3',  day:'Day 3',  city:'Tokyo',  emoji:'🗼', activities:[
+    {id:1, time:'09:00', title:'Meiji Shrine',                type:'culture', note:'Beautiful forested shrine in the city'},
+    {id:2, time:'11:00', title:'Harajuku — Takeshita Street', type:'explore', note:'Wild fashion, crepes, and fun'},
+    {id:3, time:'14:00', title:'Tsukiji Outer Market',        type:'food',    note:'Fresh sushi, tamagoyaki, and street food'},
+    {id:4, time:'18:30', title:'Shinjuku Golden Gai',         type:'explore', note:'Hundreds of tiny atmospheric retro bars'}
+  ]},
+  {id:4,  date:'Apr 4',  day:'Day 4',  city:'Hakone', emoji:'🗻', activities:[
+    {id:1, time:'09:00', title:'Depart Tokyo → Hakone',       type:'transport',    note:'Romancecar from Shinjuku (~90 min)'},
+    {id:2, time:'12:00', title:'Hakone Open Air Museum',      type:'culture',      note:'Outdoor sculpture park with stunning Fuji views'},
+    {id:3, time:'15:00', title:'Mt. Fuji view at Lake Ashi',  type:'sightseeing',  note:'Take the ropeway for elevated views'},
+    {id:4, time:'18:30', title:'Onsen at Ryokan',             type:'relaxation',   note:'Traditional Japanese inn — soak & unwind'}
+  ]},
+  {id:5,  date:'Apr 5',  day:'Day 5',  city:'Kyoto',  emoji:'⛩️', activities:[
+    {id:1, time:'10:00', title:'Shinkansen to Kyoto',         type:'transport', note:'~2.5 hrs from Odawara'},
+    {id:2, time:'13:30', title:'Fushimi Inari Shrine',        type:'culture',   note:'10,000 torii gates! Hike up for views. 2–3 hrs'},
+    {id:3, time:'17:00', title:'Gion District stroll',        type:'explore',   note:'Look out for maiko / geishas in the evening'},
+    {id:4, time:'19:30', title:'Nishiki Market dinner',       type:'food',      note:'Tofu, pickles, and local street food'}
+  ]},
+  {id:6,  date:'Apr 6',  day:'Day 6',  city:'Kyoto',  emoji:'⛩️', activities:[
+    {id:1, time:'07:30', title:'Arashiyama Bamboo Grove',     type:'sightseeing', note:'Go at dawn — magical and crowd-free!'},
+    {id:2, time:'09:30', title:'Tenryu-ji Zen Garden',        type:'culture',     note:'UNESCO World Heritage garden'},
+    {id:3, time:'13:00', title:'Kinkaku-ji (Golden Pavilion)',type:'culture',     note:'Iconic gold-leaf temple reflected on a pond'},
+    {id:4, time:'16:00', title:"Philosopher's Path walk",     type:'explore',     note:'Canal lined with cherry blossoms 🌸'}
+  ]},
+  {id:7,  date:'Apr 7',  day:'Day 7',  city:'Kyoto',  emoji:'⛩️', activities:[
+    {id:1, time:'09:00', title:'Nijo Castle',                 type:'culture',  note:"Ninja-proof 'nightingale floors'!"},
+    {id:2, time:'11:30', title:'Kyoto Imperial Palace',       type:'culture',  note:'Free to enter the extensive grounds'},
+    {id:3, time:'14:30', title:'Tea ceremony class',          type:'activity', note:'Book in advance. ~1.5 hrs'},
+    {id:4, time:'19:00', title:'Farewell Kyoto Izakaya',      type:'food',     note:''}
+  ]},
+  {id:8,  date:'Apr 8',  day:'Day 8',  city:'Osaka',  emoji:'🏙️', activities:[
+    {id:1, time:'10:00', title:'Shinkansen to Osaka',         type:'transport', note:'Only 15 min from Kyoto!'},
+    {id:2, time:'11:30', title:'Osaka Castle',                type:'culture',   note:'Lovely grounds + museum inside'},
+    {id:3, time:'14:30', title:'Dotonbori — Street Food',     type:'food',      note:'Try takoyaki, okonomiyaki, and kushikatsu!'},
+    {id:4, time:'17:30', title:'Kuromon Ichiba Market',       type:'food',      note:"'Osaka's kitchen' — fresh seafood & snacks"},
+    {id:5, time:'20:00', title:'Namba at night',              type:'explore',   note:''}
+  ]},
+  {id:9,  date:'Apr 9',  day:'Day 9',  city:'Osaka',  emoji:'🏙️', activities:[
+    {id:1, time:'09:00', title:'Universal Studios Japan',     type:'activity', note:'Nintendo World, Harry Potter & more! Full day'},
+    {id:2, time:'18:00', title:'Final shopping — Don Quijote',type:'explore',  note:'Best for souvenirs, snacks & cosmetics'},
+    {id:3, time:'20:30', title:'Group farewell dinner 🥂',    type:'food',     note:''}
+  ]},
+  {id:10, date:'Apr 10', day:'Day 10', city:'Osaka',  emoji:'🏙️', activities:[
+    {id:1, time:'07:00', title:'Transfer to Kansai Airport',  type:'transport', note:'Allow 60+ mins for check-in and security'},
+    {id:2, time:'11:00', title:'Depart Japan 🛫',             type:'transport', note:'Sayonara, Japan! またね 🇯🇵'}
+  ]}
+];
 
-const s=(...styles)=>Object.assign({},...styles.filter(Boolean));
-const card=(extra={})=>s({background:'#fff',borderRadius:20,padding:18,border:'1px solid #f3f4f6'},extra);
-const btn=(bg,color,extra={})=>s({padding:'9px 18px',background:bg,color,border:'none',borderRadius:12,cursor:'pointer',fontWeight:600,fontSize:13},extra);
-const inp={padding:'9px 12px',borderRadius:12,border:'1px solid #e5e7eb',fontSize:13,width:'100%'};
-const pill=(active,ac,ic)=>({padding:'7px 14px',borderRadius:99,fontSize:12,fontWeight:500,border:'1px solid',flexShrink:0,cursor:'pointer',borderColor:active?ac:'#e5e7eb',background:active?ac:'#fff',color:active?'#fff':ic||'#374151'});
-const avatar=(color)=>({width:36,height:36,borderRadius:'50%',background:color,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:12,flexShrink:0});
-const row=(extra={})=>s({display:'flex',alignItems:'center',gap:10},extra);
-const col=(gap=12)=>({display:'flex',flexDirection:'column',gap});
+var INIT_PLACES = [
+  {id:1,  name:'Senso-ji Temple',         city:'Tokyo',  category:'Culture',    emoji:'⛩️', description:"Tokyo's oldest and most iconic temple in Asakusa",          visited:false, starred:true },
+  {id:2,  name:'Shibuya Crossing',        city:'Tokyo',  category:'Iconic',     emoji:'🚦', description:"The world's busiest pedestrian crossing",                   visited:false, starred:true },
+  {id:3,  name:'TeamLab Borderless',      city:'Tokyo',  category:'Art',        emoji:'✨', description:'Mesmerising immersive digital art museum',                  visited:false, starred:true },
+  {id:4,  name:'Meiji Shrine',            city:'Tokyo',  category:'Culture',    emoji:'🌲', description:'Serene Shinto shrine surrounded by forested park',           visited:false, starred:false},
+  {id:5,  name:'Tsukiji Market',          city:'Tokyo',  category:'Food',       emoji:'🐟', description:'World-famous seafood and street food market',                visited:false, starred:false},
+  {id:6,  name:'Akihabara',               city:'Tokyo',  category:'Shopping',   emoji:'🎮', description:'Electric Town for electronics, anime, and arcades',          visited:false, starred:false},
+  {id:7,  name:'Harajuku',                city:'Tokyo',  category:'Shopping',   emoji:'👗', description:'Wild fashion district and Takeshita Street',                visited:false, starred:false},
+  {id:8,  name:'Golden Gai, Shinjuku',    city:'Tokyo',  category:'Nightlife',  emoji:'🍶', description:'Hundreds of tiny atmospheric retro bars',                   visited:false, starred:false},
+  {id:9,  name:'Mt. Fuji View (Ashi)',    city:'Hakone', category:'Nature',     emoji:'🗻', description:'Iconic view of Mt. Fuji reflected in Lake Ashi',            visited:false, starred:true },
+  {id:10, name:'Hakone Open Air Museum',  city:'Hakone', category:'Art',        emoji:'🖼️', description:'Outdoor sculpture park with spectacular Fuji views',        visited:false, starred:false},
+  {id:11, name:'Onsen (Hot Springs)',     city:'Hakone', category:'Relaxation', emoji:'♨️', description:'Traditional Japanese hot spring bathing at a Ryokan',       visited:false, starred:true },
+  {id:12, name:'Fushimi Inari Shrine',    city:'Kyoto',  category:'Culture',    emoji:'⛩️', description:'Thousands of bright red torii gates climbing the mountain', visited:false, starred:true },
+  {id:13, name:'Arashiyama Bamboo Grove', city:'Kyoto',  category:'Nature',     emoji:'🎋', description:'Ethereal bamboo forest walk — best visited at dawn',        visited:false, starred:true },
+  {id:14, name:'Kinkaku-ji',              city:'Kyoto',  category:'Culture',    emoji:'✨', description:'Zen temple covered in gold leaf, reflected on a pond',      visited:false, starred:true },
+  {id:15, name:'Gion District',           city:'Kyoto',  category:'Culture',    emoji:'👘', description:'Traditional geisha district with preserved machiya',        visited:false, starred:false},
+  {id:16, name:"Philosopher's Path",      city:'Kyoto',  category:'Nature',     emoji:'🌸', description:'Stone canal path lined with cherry blossom trees',          visited:false, starred:false},
+  {id:17, name:'Nijo Castle',             city:'Kyoto',  category:'Culture',    emoji:'🏯', description:"UNESCO castle famous for its 'nightingale floors'",         visited:false, starred:false},
+  {id:18, name:'Dotonbori',               city:'Osaka',  category:'Food',       emoji:'🦞', description:"Neon-lit canal district — Osaka's street food paradise",    visited:false, starred:true },
+  {id:19, name:'Osaka Castle',            city:'Osaka',  category:'Culture',    emoji:'🏯', description:'Iconic 16th-century castle with beautiful park grounds',    visited:false, starred:false},
+  {id:20, name:'Universal Studios Japan', city:'Osaka',  category:'Activity',   emoji:'🎢', description:'Theme park with Nintendo World and Harry Potter world',     visited:false, starred:false},
+  {id:21, name:'Kuromon Ichiba Market',   city:'Osaka',  category:'Food',       emoji:'🥘', description:"Lively local market — 'Osaka's kitchen'",                  visited:false, starred:false},
+  {id:22, name:'Namba District',          city:'Osaka',  category:'Nightlife',  emoji:'🌃', description:"Heart of Osaka's nightlife, shopping and entertainment",    visited:false, starred:false}
+];
 
-// ── PEOPLE ────────────────────────────────────────────────────────────────────
+var EXP_CATS = ['✈️ Transport','🏨 Accommodation','🍜 Food','🎭 Activities','🛍️ Shopping','💊 Medical','📱 Misc'];
+var COLORS = ['#DC2626','#7C3AED','#2563EB','#059669','#D97706','#DB2777'];
+var ACT_EMOJI = {transport:'🚅',accommodation:'🏨',food:'🍜',culture:'⛩️',explore:'🗺️',activity:'🎭',sightseeing:'📸',relaxation:'♨️'};
 
-function PeopleTab({people,setPeople}){
-  const[name,setName]=useState('');
-  const add=()=>{
-    if(!name.trim())return;
-    setPeople([...people,{id:Date.now(),name:name.trim(),color:COLORS[people.length%COLORS.length]}]);
+// ── STYLE HELPERS ─────────────────────────────────────────────────────────────
+
+function col(gap) { return {display:'flex', flexDirection:'column', gap: gap||12}; }
+function row(extra) { return Object.assign({display:'flex', alignItems:'center', gap:10}, extra||{}); }
+function card(extra) { return Object.assign({background:'#fff', borderRadius:20, padding:18, border:'1px solid #f3f4f6'}, extra||{}); }
+function avatar(color) { return {width:36, height:36, borderRadius:'50%', background:color, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:12, flexShrink:0}; }
+function btn(bg, color, extra) { return Object.assign({padding:'9px 18px', background:bg, color:color, border:'none', borderRadius:12, cursor:'pointer', fontWeight:600, fontSize:13}, extra||{}); }
+function pill(active, ac) { return {padding:'7px 14px', borderRadius:99, fontSize:12, fontWeight:500, border:'1px solid', flexShrink:0, cursor:'pointer', borderColor:active?ac:'#e5e7eb', background:active?ac:'#fff', color:active?'#fff':'#374151'}; }
+var INP = {padding:'9px 12px', borderRadius:12, border:'1px solid #e5e7eb', fontSize:13};
+
+// ── PEOPLE TAB ────────────────────────────────────────────────────────────────
+
+function PeopleTab(props) {
+  var people = props.people;
+  var setPeople = props.setPeople;
+  var nameState = useState('');
+  var name = nameState[0];
+  var setName = nameState[1];
+
+  function add() {
+    if (!name.trim()) return;
+    setPeople(people.concat([{id:Date.now(), name:name.trim(), color:COLORS[people.length % COLORS.length]}]));
     setName('');
-  };
-  return html`<div style=${col()}>
-    <div style=${{background:'linear-gradient(135deg,#fef2f2,#fdf4ff)',borderRadius:20,padding:20,border:'1px solid #fecaca'}}>
-      <div style=${{fontWeight:700,color:'#1f2937',marginBottom:12,fontSize:15}}>🗾 Trip Overview</div>
-      <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-        ${[['Destination','Japan 🇯🇵'],['Travelers',people.length+' people'],['Dates','Apr 1–10, 2026'],['Duration','10 days'],['Cities','Tokyo · Hakone · Kyoto · Osaka']].map(([k,v])=>html`
-          <div key=${k}><div style=${{fontSize:11,color:'#9ca3af'}}>${k}</div><div style=${{fontSize:14,fontWeight:600,color:'#1f2937',marginTop:2}}>${v}</div></div>`)}
-      </div>
-    </div>
-    <div style=${card()}>
-      <div style=${{fontWeight:700,color:'#1f2937',marginBottom:14,fontSize:15}}>👥 Travelers (${people.length})</div>
-      <div style=${col(10)}>
-        ${people.map(p=>html`
-          <div key=${p.id} style=${{...row(),background:'#f9fafb',borderRadius:14,padding:'10px 14px'}}>
-            <div style=${avatar(p.color)}>${p.name.slice(0,2).toUpperCase()}</div>
-            <span style=${{flex:1,fontWeight:500,color:'#374151'}}>${p.name}</span>
-            <button onclick=${()=>setPeople(people.filter(x=>x.id!==p.id))} style=${{background:'none',border:'none',cursor:'pointer',color:'#d1d5db',fontSize:16}}>✕</button>
-          </div>`)}
-      </div>
-      <div style=${{...row(),marginTop:14}}>
-        <input value=${name} oninput=${e=>setName(e.target.value)} onkeydown=${e=>e.key==='Enter'&&add()} placeholder="Add traveler name..." style=${{...inp,flex:1}}/>
-        <button onclick=${add} style=${btn('#DC2626','#fff')}>+ Add</button>
-      </div>
-    </div>
-  </div>`;
+  }
+
+  return h('div', {style:col()},
+    h('div', {style:{background:'linear-gradient(135deg,#fef2f2,#fdf4ff)', borderRadius:20, padding:20, border:'1px solid #fecaca'}},
+      h('div', {style:{fontWeight:700, color:'#1f2937', marginBottom:12, fontSize:15}}, '🗾 Trip Overview'),
+      h('div', {style:{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12}},
+        [['Destination','Japan 🇯🇵'],['Travelers',people.length+' people'],['Dates','Apr 1–10, 2026'],['Duration','10 days'],['Cities','Tokyo · Hakone · Kyoto · Osaka']].map(function(kv) {
+          return h('div', {key:kv[0]},
+            h('div', {style:{fontSize:11, color:'#9ca3af'}}, kv[0]),
+            h('div', {style:{fontSize:14, fontWeight:600, color:'#1f2937', marginTop:2}}, kv[1])
+          );
+        })
+      )
+    ),
+    h('div', {style:card()},
+      h('div', {style:{fontWeight:700, color:'#1f2937', marginBottom:14, fontSize:15}}, '👥 Travelers (' + people.length + ')'),
+      h('div', {style:col(10)},
+        people.map(function(p) {
+          return h('div', {key:p.id, style:Object.assign(row(), {background:'#f9fafb', borderRadius:14, padding:'10px 14px'})},
+            h('div', {style:avatar(p.color)}, p.name.slice(0,2).toUpperCase()),
+            h('span', {style:{flex:1, fontWeight:500, color:'#374151'}}, p.name),
+            h('button', {onClick:function(){setPeople(people.filter(function(x){return x.id!==p.id;}));}, style:{background:'none', border:'none', cursor:'pointer', color:'#d1d5db', fontSize:18, lineHeight:1}}, '✕')
+          );
+        })
+      ),
+      h('div', {style:Object.assign(row(), {marginTop:14})},
+        h('input', {value:name, onChange:function(e){setName(e.target.value);}, onKeyDown:function(e){if(e.key==='Enter')add();}, placeholder:'Add traveler name...', style:Object.assign({}, INP, {flex:1})}),
+        h('button', {onClick:add, style:btn('#DC2626','#fff')}, '+ Add')
+      )
+    )
+  );
 }
 
-// ── EXPENSES ──────────────────────────────────────────────────────────────────
+// ── EXPENSES TAB ──────────────────────────────────────────────────────────────
 
-function ExpensesTab({expenses,setExpenses,people}){
-  const[showAdd,setShowAdd]=useState(false);
-  const[form,setForm]=useState({title:'',amount:'',paidById:people[0]?.id||1,splitWithIds:people.map(p=>p.id),category:EXP_CATS[0],date:''});
-  const total=expenses.reduce((s,e)=>s+e.amount,0);
-  const balances=useMemo(()=>{
-    const paid={},owed={};
-    people.forEach(p=>{paid[p.id]=0;owed[p.id]=0;});
-    expenses.forEach(e=>{
-      paid[e.paidById]=(paid[e.paidById]||0)+e.amount;
-      const share=e.amount/(e.splitWithIds.length||1);
-      e.splitWithIds.forEach(id=>{owed[id]=(owed[id]||0)+share;});
+function ExpensesTab(props) {
+  var expenses = props.expenses;
+  var setExpenses = props.setExpenses;
+  var people = props.people;
+
+  var showAddState = useState(false);
+  var showAdd = showAddState[0]; var setShowAdd = showAddState[1];
+  var formState = useState({title:'', amount:'', paidById:people[0]?people[0].id:1, splitWithIds:people.map(function(p){return p.id;}), category:EXP_CATS[0], date:''});
+  var form = formState[0]; var setForm = formState[1];
+
+  var total = expenses.reduce(function(s,e){return s+e.amount;}, 0);
+
+  var balances = useMemo(function() {
+    var paid = {}, owed = {};
+    people.forEach(function(p){paid[p.id]=0; owed[p.id]=0;});
+    expenses.forEach(function(e) {
+      paid[e.paidById] = (paid[e.paidById]||0) + e.amount;
+      var share = e.amount / (e.splitWithIds.length||1);
+      e.splitWithIds.forEach(function(id){owed[id]=(owed[id]||0)+share;});
     });
-    return people.map(p=>({...p,paid:paid[p.id]||0,owed:owed[p.id]||0,balance:(paid[p.id]||0)-(owed[p.id]||0)}));
-  },[expenses,people]);
-  const toggleSplit=id=>setForm(f=>({...f,splitWithIds:f.splitWithIds.includes(id)?f.splitWithIds.filter(x=>x!==id):[...f.splitWithIds,id]}));
-  const save=()=>{
-    if(!form.title||!form.amount||!form.splitWithIds.length)return;
-    setExpenses([...expenses,{id:Date.now(),...form,amount:parseFloat(form.amount)}]);
-    setForm({title:'',amount:'',paidById:people[0]?.id||1,splitWithIds:people.map(p=>p.id),category:EXP_CATS[0],date:''});
+    return people.map(function(p) {
+      return Object.assign({}, p, {paid:paid[p.id]||0, owed:owed[p.id]||0, balance:(paid[p.id]||0)-(owed[p.id]||0)});
+    });
+  }, [expenses, people]);
+
+  function toggleSplit(id) {
+    var ids = form.splitWithIds;
+    setForm(Object.assign({}, form, {splitWithIds: ids.indexOf(id)>=0 ? ids.filter(function(x){return x!==id;}) : ids.concat([id])}));
+  }
+
+  function save() {
+    if (!form.title || !form.amount || !form.splitWithIds.length) return;
+    setExpenses(expenses.concat([Object.assign({}, form, {id:Date.now(), amount:parseFloat(form.amount)})]));
+    setForm({title:'', amount:'', paidById:people[0]?people[0].id:1, splitWithIds:people.map(function(p){return p.id;}), category:EXP_CATS[0], date:''});
     setShowAdd(false);
-  };
-  return html`<div style=${col(14)}>
-    <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
-      ${[['Total Spent','$'+total.toLocaleString()],['Per Person','$'+(people.length?Math.round(total/people.length).toLocaleString():'0')],['Entries',''+expenses.length]].map(([l,v])=>html`
-        <div key=${l} style=${s(card({padding:14}),{textAlign:'center'})}>
-          <div style=${{fontSize:11,color:'#9ca3af',marginBottom:4}}>${l}</div>
-          <div style=${{fontSize:20,fontWeight:700,color:'#1f2937'}}>${v}</div>
-        </div>`)}
-    </div>
-    <div style=${card()}>
-      <div style=${{fontWeight:700,color:'#1f2937',marginBottom:12,fontSize:15}}>💰 Who Owes What</div>
-      <div style=${col(10)}>
-        ${balances.map(p=>html`
-          <div key=${p.id} style=${row()}>
-            <div style=${avatar(p.color)}>${p.name.slice(0,2).toUpperCase()}</div>
-            <div style=${{flex:1}}>
-              <div style=${{fontSize:13,fontWeight:600,color:'#374151'}}>${p.name}</div>
-              <div style=${{fontSize:11,color:'#9ca3af'}}>paid $${p.paid.toFixed(0)} · owes $${p.owed.toFixed(0)}</div>
-            </div>
-            <div style=${{fontWeight:700,fontSize:14,color:p.balance>=0?'#16a34a':'#dc2626'}}>
-              ${p.balance>=0?'+$'+p.balance.toFixed(0):'-$'+Math.abs(p.balance).toFixed(0)}
-            </div>
-          </div>`)}
-      </div>
-      <div style=${{fontSize:11,color:'#9ca3af',marginTop:10}}>+ receives money · − owes money</div>
-    </div>
-    <button onclick=${()=>setShowAdd(!showAdd)} style=${{...btn('#DC2626','#fff'),width:'100%',padding:'13px 0',fontSize:14,borderRadius:16}}>+ Add Expense</button>
-    ${showAdd&&html`
-      <div style=${card({border:'1px solid #fecaca'})}>
-        <div style=${{fontWeight:700,color:'#1f2937',fontSize:15,marginBottom:12}}>New Expense</div>
-        <div style=${col(10)}>
-          <input value=${form.title} oninput=${e=>setForm({...form,title:e.target.value})} placeholder="What was it?" style=${inp}/>
-          <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-            <input type="number" value=${form.amount} oninput=${e=>setForm({...form,amount:e.target.value})} placeholder="$ Amount" style=${inp}/>
-            <input value=${form.date} oninput=${e=>setForm({...form,date:e.target.value})} placeholder="Date (e.g. Apr 1)" style=${inp}/>
-          </div>
-          <select value=${form.category} onchange=${e=>setForm({...form,category:e.target.value})} style=${{...inp,background:'#fff'}}>
-            ${EXP_CATS.map(c=>html`<option key=${c} value=${c}>${c}</option>`)}
-          </select>
-          <div>
-            <div style=${{fontSize:12,color:'#6b7280',marginBottom:8}}>Paid by</div>
-            <div style=${{display:'flex',flexWrap:'wrap',gap:8}}>
-              ${people.map(p=>html`<button key=${p.id} onclick=${()=>setForm({...form,paidById:p.id})} style=${pill(form.paidById===p.id,p.color)}>${p.name}</button>`)}
-            </div>
-          </div>
-          <div>
-            <div style=${{fontSize:12,color:'#6b7280',marginBottom:8}}>Split with</div>
-            <div style=${{display:'flex',flexWrap:'wrap',gap:8}}>
-              ${people.map(p=>html`<button key=${p.id} onclick=${()=>toggleSplit(p.id)} style=${pill(form.splitWithIds.includes(p.id),p.color)}>${p.name} ${form.splitWithIds.includes(p.id)?'✓':''}</button>`)}
-            </div>
-          </div>
-          <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-            <button onclick=${save} style=${btn('#DC2626','#fff',{width:'100%',padding:'11px 0'})}>Save</button>
-            <button onclick=${()=>setShowAdd(false)} style=${btn('#f3f4f6','#374151',{width:'100%',padding:'11px 0'})}>Cancel</button>
-          </div>
-        </div>
-      </div>`}
-    <div style=${col(10)}>
-      ${expenses.map(e=>{
-        const payer=people.find(p=>p.id===e.paidById);
-        const per=(e.amount/(e.splitWithIds.length||1)).toFixed(0);
-        return html`
-          <div key=${e.id} style=${s(card({padding:14}),row())}>
-            <div style=${{fontSize:24,flexShrink:0}}>${e.category.split(' ')[0]}</div>
-            <div style=${{flex:1,minWidth:0}}>
-              <div style=${{fontWeight:600,color:'#1f2937',fontSize:13,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${e.title}</div>
-              <div style=${{fontSize:11,color:'#9ca3af',marginTop:2}}>${e.date} · ${payer?.name} paid · $${per}/person</div>
-            </div>
-            <div style=${{textAlign:'right',flexShrink:0}}>
-              <div style=${{fontWeight:700,color:'#1f2937',fontSize:14}}>$${e.amount}</div>
-              <div style=${{fontSize:11,color:'#9ca3af'}}>${e.splitWithIds.length} people</div>
-            </div>
-            <button onclick=${()=>setExpenses(expenses.filter(x=>x.id!==e.id))} style=${{background:'none',border:'none',cursor:'pointer',color:'#d1d5db',fontSize:16}}>🗑</button>
-          </div>`;
-      })}
-    </div>
-  </div>`;
+  }
+
+  return h('div', {style:col(14)},
+    // Summary cards
+    h('div', {style:{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10}},
+      [['Total Spent','$'+total.toLocaleString()], ['Per Person','$'+(people.length?Math.round(total/people.length).toLocaleString():'0')], ['Entries',''+expenses.length]].map(function(kv) {
+        return h('div', {key:kv[0], style:card({padding:14, textAlign:'center'})},
+          h('div', {style:{fontSize:11, color:'#9ca3af', marginBottom:4}}, kv[0]),
+          h('div', {style:{fontSize:20, fontWeight:700, color:'#1f2937'}}, kv[1])
+        );
+      })
+    ),
+    // Balances
+    h('div', {style:card()},
+      h('div', {style:{fontWeight:700, color:'#1f2937', marginBottom:12, fontSize:15}}, '💰 Who Owes What'),
+      h('div', {style:col(10)},
+        balances.map(function(p) {
+          return h('div', {key:p.id, style:row()},
+            h('div', {style:avatar(p.color)}, p.name.slice(0,2).toUpperCase()),
+            h('div', {style:{flex:1}},
+              h('div', {style:{fontSize:13, fontWeight:600, color:'#374151'}}, p.name),
+              h('div', {style:{fontSize:11, color:'#9ca3af'}}, 'paid $'+p.paid.toFixed(0)+' · owes $'+p.owed.toFixed(0))
+            ),
+            h('div', {style:{fontWeight:700, fontSize:14, color:p.balance>=0?'#16a34a':'#dc2626'}},
+              p.balance>=0 ? '+$'+p.balance.toFixed(0) : '-$'+Math.abs(p.balance).toFixed(0)
+            )
+          );
+        })
+      ),
+      h('div', {style:{fontSize:11, color:'#9ca3af', marginTop:10}}, '+ receives money · − owes money')
+    ),
+    // Add button
+    h('button', {onClick:function(){setShowAdd(!showAdd);}, style:btn('#DC2626','#fff',{width:'100%', padding:'13px 0', fontSize:14, borderRadius:16})}, '+ Add Expense'),
+    // Add form
+    showAdd && h('div', {style:card({border:'1px solid #fecaca'})},
+      h('div', {style:{fontWeight:700, color:'#1f2937', fontSize:15, marginBottom:12}}, 'New Expense'),
+      h('div', {style:col(10)},
+        h('input', {value:form.title, onChange:function(e){setForm(Object.assign({},form,{title:e.target.value}));}, placeholder:'What was it?', style:Object.assign({},INP,{width:'100%'})}),
+        h('div', {style:{display:'grid', gridTemplateColumns:'1fr 1fr', gap:8}},
+          h('input', {type:'number', value:form.amount, onChange:function(e){setForm(Object.assign({},form,{amount:e.target.value}));}, placeholder:'$ Amount', style:Object.assign({},INP,{width:'100%'})}),
+          h('input', {value:form.date, onChange:function(e){setForm(Object.assign({},form,{date:e.target.value}));}, placeholder:'Date (e.g. Apr 1)', style:Object.assign({},INP,{width:'100%'})})
+        ),
+        h('select', {value:form.category, onChange:function(e){setForm(Object.assign({},form,{category:e.target.value}));}, style:Object.assign({},INP,{width:'100%',background:'#fff'})},
+          EXP_CATS.map(function(c){return h('option',{key:c,value:c},c);})
+        ),
+        h('div', null,
+          h('div', {style:{fontSize:12, color:'#6b7280', marginBottom:8}}, 'Paid by'),
+          h('div', {style:{display:'flex', flexWrap:'wrap', gap:8}},
+            people.map(function(p) {
+              return h('button', {key:p.id, onClick:function(){setForm(Object.assign({},form,{paidById:p.id}));}, style:pill(form.paidById===p.id, p.color)}, p.name);
+            })
+          )
+        ),
+        h('div', null,
+          h('div', {style:{fontSize:12, color:'#6b7280', marginBottom:8}}, 'Split with'),
+          h('div', {style:{display:'flex', flexWrap:'wrap', gap:8}},
+            people.map(function(p) {
+              var active = form.splitWithIds.indexOf(p.id) >= 0;
+              return h('button', {key:p.id, onClick:function(){toggleSplit(p.id);}, style:pill(active, p.color)}, p.name + (active?' ✓':''));
+            })
+          )
+        ),
+        h('div', {style:{display:'grid', gridTemplateColumns:'1fr 1fr', gap:8}},
+          h('button', {onClick:save, style:btn('#DC2626','#fff',{width:'100%',padding:'11px 0'})}, 'Save'),
+          h('button', {onClick:function(){setShowAdd(false);}, style:btn('#f3f4f6','#374151',{width:'100%',padding:'11px 0'})}, 'Cancel')
+        )
+      )
+    ),
+    // Expense list
+    h('div', {style:col(10)},
+      expenses.map(function(e) {
+        var payer = people.find(function(p){return p.id===e.paidById;});
+        var per = (e.amount/(e.splitWithIds.length||1)).toFixed(0);
+        return h('div', {key:e.id, style:Object.assign(card({padding:14}), row())},
+          h('div', {style:{fontSize:24, flexShrink:0}}, e.category.split(' ')[0]),
+          h('div', {style:{flex:1, minWidth:0}},
+            h('div', {style:{fontWeight:600, color:'#1f2937', fontSize:13, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, e.title),
+            h('div', {style:{fontSize:11, color:'#9ca3af', marginTop:2}}, e.date + ' · ' + (payer?payer.name:'?') + ' paid · $' + per + '/person')
+          ),
+          h('div', {style:{textAlign:'right', flexShrink:0}},
+            h('div', {style:{fontWeight:700, color:'#1f2937', fontSize:14}}, '$'+e.amount),
+            h('div', {style:{fontSize:11, color:'#9ca3af'}}, e.splitWithIds.length+' people')
+          ),
+          h('button', {onClick:function(){setExpenses(expenses.filter(function(x){return x.id!==e.id;}));}, style:{background:'none', border:'none', cursor:'pointer', color:'#d1d5db', fontSize:18}}, '🗑')
+        );
+      })
+    )
+  );
 }
 
-// ── ITINERARY ─────────────────────────────────────────────────────────────────
+// ── ITINERARY TAB ─────────────────────────────────────────────────────────────
 
-function ItineraryTab({itinerary}){
-  const[expanded,setExpanded]=useState(1);
-  return html`<div style=${col(10)}>
-    ${itinerary.map(day=>html`
-      <div key=${day.id} style=${{background:'#fff',borderRadius:20,border:'1px solid #f3f4f6',overflow:'hidden'}}>
-        <button onclick=${()=>setExpanded(expanded===day.id?null:day.id)}
-          style=${{width:'100%',display:'flex',alignItems:'center',gap:12,padding:'14px 16px',background:'none',border:'none',cursor:'pointer',textAlign:'left'}}>
-          <span style=${{fontSize:22}}>${day.emoji}</span>
-          <div style=${{flex:1}}>
-            <div style=${{fontWeight:700,color:'#1f2937',fontSize:14}}>${day.day} — ${day.city}</div>
-            <div style=${{fontSize:11,color:'#9ca3af',marginTop:1}}>${day.date} · ${day.activities.length} activities</div>
-          </div>
-          <span style=${{color:'#9ca3af',fontSize:14}}>${expanded===day.id?'▴':'▾'}</span>
-        </button>
-        ${expanded===day.id&&html`
-          <div style=${{borderTop:'1px solid #f9fafb',padding:'4px 16px 16px'}}>
-            ${day.activities.map((act,i)=>html`
-              <div key=${act.id} style=${{display:'flex',gap:12,paddingTop:14}}>
-                <div style=${{display:'flex',flexDirection:'column',alignItems:'center'}}>
-                  <div style=${{fontSize:18}}>${ACT_EMOJI[act.type]||'📍'}</div>
-                  ${i<day.activities.length-1&&html`<div style=${{width:1,flex:1,background:'#f3f4f6',margin:'4px 0'}}/>`}
-                </div>
-                <div style=${{flex:1,paddingBottom:4}}>
-                  <div style=${{display:'flex',alignItems:'baseline',gap:8,flexWrap:'wrap'}}>
-                    <span style=${{fontSize:11,fontFamily:'monospace',color:'#9ca3af',flexShrink:0}}>${act.time}</span>
-                    <span style=${{fontSize:13,fontWeight:600,color:'#1f2937'}}>${act.title}</span>
-                  </div>
-                  ${act.note&&html`<div style=${{fontSize:11,color:'#6b7280',marginTop:3}}>${act.note}</div>`}
-                </div>
-              </div>`)}
-          </div>`}
-      </div>`)}
-  </div>`;
+function ItineraryTab(props) {
+  var itinerary = props.itinerary;
+  var expandedState = useState(1);
+  var expanded = expandedState[0]; var setExpanded = expandedState[1];
+
+  return h('div', {style:col(10)},
+    itinerary.map(function(day) {
+      var isOpen = expanded === day.id;
+      return h('div', {key:day.id, style:{background:'#fff', borderRadius:20, border:'1px solid #f3f4f6', overflow:'hidden'}},
+        h('button', {onClick:function(){setExpanded(isOpen?null:day.id);}, style:{width:'100%', display:'flex', alignItems:'center', gap:12, padding:'14px 16px', background:'none', border:'none', cursor:'pointer', textAlign:'left'}},
+          h('span', {style:{fontSize:22}}, day.emoji),
+          h('div', {style:{flex:1}},
+            h('div', {style:{fontWeight:700, color:'#1f2937', fontSize:14}}, day.day + ' — ' + day.city),
+            h('div', {style:{fontSize:11, color:'#9ca3af', marginTop:1}}, day.date + ' · ' + day.activities.length + ' activities')
+          ),
+          h('span', {style:{color:'#9ca3af', fontSize:14}}, isOpen ? '▴' : '▾')
+        ),
+        isOpen && h('div', {style:{borderTop:'1px solid #f9fafb', padding:'4px 16px 16px'}},
+          day.activities.map(function(act, i) {
+            return h('div', {key:act.id, style:{display:'flex', gap:12, paddingTop:14}},
+              h('div', {style:{display:'flex', flexDirection:'column', alignItems:'center'}},
+                h('div', {style:{fontSize:18}}, ACT_EMOJI[act.type]||'📍'),
+                i < day.activities.length-1 && h('div', {style:{width:1, flex:1, background:'#f3f4f6', margin:'4px 0'}})
+              ),
+              h('div', {style:{flex:1, paddingBottom:4}},
+                h('div', {style:{display:'flex', alignItems:'baseline', gap:8, flexWrap:'wrap'}},
+                  h('span', {style:{fontSize:11, fontFamily:'monospace', color:'#9ca3af', flexShrink:0}}, act.time),
+                  h('span', {style:{fontSize:13, fontWeight:600, color:'#1f2937'}}, act.title)
+                ),
+                act.note && h('div', {style:{fontSize:11, color:'#6b7280', marginTop:3}}, act.note)
+              )
+            );
+          })
+        )
+      );
+    })
+  );
 }
 
-// ── PLACES ────────────────────────────────────────────────────────────────────
+// ── PLACES TAB ────────────────────────────────────────────────────────────────
 
-function PlacesTab({places,setPlaces}){
-  const[city,setCity]=useState('All');
-  const[showDone,setShowDone]=useState(false);
-  const cities=['All',...new Set(places.map(p=>p.city))];
-  const filtered=places.filter(p=>(city==='All'||p.city===city)&&(showDone||!p.visited));
-  const done=places.filter(p=>p.visited).length;
-  const starred=places.filter(p=>p.starred).length;
-  const toggle=(id,key)=>setPlaces(places.map(p=>p.id===id?{...p,[key]:!p[key]}:p));
-  return html`<div style=${col(14)}>
-    <div style=${card()}>
-      <div style=${{...row(),justifyContent:'space-between',marginBottom:10}}>
-        <div style=${{fontWeight:700,color:'#1f2937',fontSize:15}}>📍 Places Tracker</div>
-        <div style=${{fontSize:13,color:'#6b7280'}}>${done}/${places.length} visited</div>
-      </div>
-      <div style=${{background:'#f3f4f6',borderRadius:99,height:8,overflow:'hidden'}}>
-        <div style=${{background:'#DC2626',height:'100%',borderRadius:99,width:(done/places.length*100)+'%',transition:'width 0.4s'}}/>
-      </div>
-      <div style=${{display:'flex',gap:16,marginTop:10,fontSize:12,color:'#6b7280'}}>
-        <span>⭐ ${starred} must-see</span>
-        <span>✅ ${done} done</span>
-        <span>🗺️ ${places.length-done} remaining</span>
-      </div>
-    </div>
-    <div style=${{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}}>
-      ${cities.map(c=>html`<button key=${c} onclick=${()=>setCity(c)} style=${pill(city===c,'#DC2626')}>${c}</button>`)}
-      <button onclick=${()=>setShowDone(!showDone)} style=${pill(showDone,'#16a34a')}>${showDone?'✓ Showing all':'Show visited'}</button>
-    </div>
-    <div style=${col(10)}>
-      ${filtered.length===0&&html`<div style=${{textAlign:'center',padding:40,color:'#9ca3af',fontSize:13}}>No places to show. Try adjusting filters.</div>`}
-      ${filtered.map(p=>html`
-        <div key=${p.id} style=${{background:p.visited?'#f9fafb':'#fff',borderRadius:16,padding:14,border:'1px solid '+(p.visited?'#d1fae5':'#f3f4f6'),opacity:p.visited?0.7:1,transition:'all 0.2s'}}>
-          <div style=${{display:'flex',alignItems:'flex-start',gap:12}}>
-            <span style=${{fontSize:22,marginTop:2}}>${p.emoji}</span>
-            <div style=${{flex:1,minWidth:0}}>
-              <div style=${{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
-                <span style=${{fontWeight:600,fontSize:14,color:p.visited?'#9ca3af':'#1f2937',textDecoration:p.visited?'line-through':'none'}}>${p.name}</span>
-                <span style=${{fontSize:10,background:'#f3f4f6',color:'#6b7280',padding:'2px 8px',borderRadius:99}}>${p.city}</span>
-                <span style=${{fontSize:10,background:'#fef9c3',color:'#92400e',padding:'2px 8px',borderRadius:99}}>${p.category}</span>
-              </div>
-              <div style=${{fontSize:12,color:'#6b7280',marginTop:4}}>${p.description}</div>
-            </div>
-            <div style=${{display:'flex',gap:8,flexShrink:0,alignItems:'center'}}>
-              <button onclick=${()=>toggle(p.id,'starred')} style=${{background:'none',border:'none',cursor:'pointer',fontSize:18,lineHeight:1,color:p.starred?'#f59e0b':'#d1d5db'}}>
-                ${p.starred?'⭐':'☆'}
-              </button>
-              <button onclick=${()=>toggle(p.id,'visited')}
-                style=${{width:28,height:28,borderRadius:'50%',border:'2px solid',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,borderColor:p.visited?'#16a34a':'#d1d5db',background:p.visited?'#16a34a':'transparent',color:'#fff',fontSize:12}}>
-                ${p.visited?'✓':''}
-              </button>
-            </div>
-          </div>
-        </div>`)}
-    </div>
-  </div>`;
+function PlacesTab(props) {
+  var places = props.places; var setPlaces = props.setPlaces;
+  var cityState = useState('All'); var city = cityState[0]; var setCity = cityState[1];
+  var doneState = useState(false); var showDone = doneState[0]; var setShowDone = doneState[1];
+
+  var cities = ['All'].concat(places.map(function(p){return p.city;}).filter(function(c,i,a){return a.indexOf(c)===i;}));
+  var filtered = places.filter(function(p){return (city==='All'||p.city===city)&&(showDone||!p.visited);});
+  var done = places.filter(function(p){return p.visited;}).length;
+  var starred = places.filter(function(p){return p.starred;}).length;
+
+  function toggle(id, key) {
+    setPlaces(places.map(function(p){return p.id===id ? Object.assign({},p,{[key]:!p[key]}) : p;}));
+  }
+
+  return h('div', {style:col(14)},
+    h('div', {style:card()},
+      h('div', {style:Object.assign(row(), {justifyContent:'space-between', marginBottom:10})},
+        h('div', {style:{fontWeight:700, color:'#1f2937', fontSize:15}}, '📍 Places Tracker'),
+        h('div', {style:{fontSize:13, color:'#6b7280'}}, done+'/'+places.length+' visited')
+      ),
+      h('div', {style:{background:'#f3f4f6', borderRadius:99, height:8, overflow:'hidden'}},
+        h('div', {style:{background:'#DC2626', height:'100%', borderRadius:99, width:(done/places.length*100)+'%', transition:'width 0.4s'}})
+      ),
+      h('div', {style:{display:'flex', gap:16, marginTop:10, fontSize:12, color:'#6b7280'}},
+        h('span', null, '⭐ '+starred+' must-see'),
+        h('span', null, '✅ '+done+' done'),
+        h('span', null, '🗺️ '+(places.length-done)+' remaining')
+      )
+    ),
+    // City filters
+    h('div', {style:{display:'flex', gap:8, overflowX:'auto', paddingBottom:4}},
+      cities.map(function(c) {
+        return h('button', {key:c, onClick:function(){setCity(c);}, style:pill(city===c,'#DC2626')}, c);
+      }),
+      h('button', {onClick:function(){setShowDone(!showDone);}, style:pill(showDone,'#16a34a')}, showDone?'✓ Showing all':'Show visited')
+    ),
+    // Places list
+    h('div', {style:col(10)},
+      filtered.length === 0 && h('div', {style:{textAlign:'center', padding:40, color:'#9ca3af', fontSize:13}}, 'No places to show. Try adjusting the filters.'),
+      filtered.map(function(p) {
+        return h('div', {key:p.id, style:{background:p.visited?'#f9fafb':'#fff', borderRadius:16, padding:14, border:'1px solid '+(p.visited?'#d1fae5':'#f3f4f6'), opacity:p.visited?0.7:1, transition:'all 0.2s'}},
+          h('div', {style:{display:'flex', alignItems:'flex-start', gap:12}},
+            h('span', {style:{fontSize:22, marginTop:2}}, p.emoji),
+            h('div', {style:{flex:1, minWidth:0}},
+              h('div', {style:{display:'flex', alignItems:'center', gap:8, flexWrap:'wrap'}},
+                h('span', {style:{fontWeight:600, fontSize:14, color:p.visited?'#9ca3af':'#1f2937', textDecoration:p.visited?'line-through':'none'}}, p.name),
+                h('span', {style:{fontSize:10, background:'#f3f4f6', color:'#6b7280', padding:'2px 8px', borderRadius:99}}, p.city),
+                h('span', {style:{fontSize:10, background:'#fef9c3', color:'#92400e', padding:'2px 8px', borderRadius:99}}, p.category)
+              ),
+              h('div', {style:{fontSize:12, color:'#6b7280', marginTop:4}}, p.description)
+            ),
+            h('div', {style:{display:'flex', gap:8, flexShrink:0, alignItems:'center'}},
+              h('button', {onClick:function(){toggle(p.id,'starred');}, style:{background:'none', border:'none', cursor:'pointer', fontSize:18, lineHeight:1, color:p.starred?'#f59e0b':'#d1d5db'}}, p.starred?'⭐':'☆'),
+              h('button', {onClick:function(){toggle(p.id,'visited');}, style:{width:28, height:28, borderRadius:'50%', border:'2px solid', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, borderColor:p.visited?'#16a34a':'#d1d5db', background:p.visited?'#16a34a':'transparent', color:'#fff', fontSize:12}},
+                p.visited ? '✓' : ''
+              )
+            )
+          )
+        );
+      })
+    )
+  );
 }
 
-// ── APP ───────────────────────────────────────────────────────────────────────
+// ── MAIN APP ──────────────────────────────────────────────────────────────────
 
-const TABS=[{id:'people',label:'People',icon:'👥'},{id:'itinerary',label:'Itinerary',icon:'📅'},{id:'expenses',label:'Expenses',icon:'💰'},{id:'places',label:'Places',icon:'📍'}];
+var TABS = [
+  {id:'people',    label:'People',    icon:'👥'},
+  {id:'itinerary', label:'Itinerary', icon:'📅'},
+  {id:'expenses',  label:'Expenses',  icon:'💰'},
+  {id:'places',    label:'Places',    icon:'📍'}
+];
 
-function App(){
-  const[tab,setTab]=useState('itinerary');
-  const[people,setPeople]=useState(INIT_PEOPLE);
-  const[expenses,setExpenses]=useState(INIT_EXPENSES);
-  const[itinerary]=useState(INIT_ITINERARY);
-  const[places,setPlaces]=useState(INIT_PLACES);
-  return html`<div style=${{minHeight:'100vh',background:'#f9fafb'}}>
-    <div style=${{background:'linear-gradient(135deg,#DC2626,#B91C1C)',color:'#fff',padding:'32px 20px 60px'}}>
-      <div style=${{maxWidth:520,margin:'0 auto'}}>
-        <div style=${{fontSize:13,color:'#fca5a5',marginBottom:6,letterSpacing:1}}>🇯🇵 SPRING TRIP 2026</div>
-        <div style=${{fontSize:32,fontWeight:800,letterSpacing:-0.5}}>Japan ✦</div>
-        <div style=${{fontSize:13,color:'#fca5a5',marginTop:6}}>Apr 1–10 · Tokyo · Hakone · Kyoto · Osaka</div>
-      </div>
-    </div>
-    <div style=${{maxWidth:520,margin:'-36px auto 0',padding:'0 16px'}}>
-      <div style=${{background:'#fff',borderRadius:20,padding:6,display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:4,boxShadow:'0 4px 24px rgba(0,0,0,0.10)'}}>
-        ${TABS.map(t=>html`
-          <button key=${t.id} onclick=${()=>setTab(t.id)}
-            style=${{padding:'10px 4px',borderRadius:14,border:'none',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3,transition:'all 0.15s',background:tab===t.id?'#DC2626':'transparent',color:tab===t.id?'#fff':'#6b7280'}}>
-            <span style=${{fontSize:16}}>${t.icon}</span>
-            <span style=${{fontSize:11,fontWeight:600}}>${t.label}</span>
-          </button>`)}
-      </div>
-    </div>
-    <div style=${{maxWidth:520,margin:'0 auto',padding:'20px 16px 48px'}}>
-      ${tab==='people'    && html`<${PeopleTab}    people=${people}     setPeople=${setPeople}/>`}
-      ${tab==='itinerary' && html`<${ItineraryTab} itinerary=${itinerary}/>`}
-      ${tab==='expenses'  && html`<${ExpensesTab}  expenses=${expenses} setExpenses=${setExpenses} people=${people}/>`}
-      ${tab==='places'    && html`<${PlacesTab}    places=${places}     setPlaces=${setPlaces}/>`}
-    </div>
-  </div>`;
+function App() {
+  var tabState = useState('itinerary'); var tab = tabState[0]; var setTab = tabState[1];
+  var peopleState = useState(INIT_PEOPLE); var people = peopleState[0]; var setPeople = peopleState[1];
+  var expState = useState(INIT_EXPENSES); var expenses = expState[0]; var setExpenses = expState[1];
+  var itinerary = INIT_ITINERARY;
+  var placesState = useState(INIT_PLACES); var places = placesState[0]; var setPlaces = placesState[1];
+
+  return h('div', {style:{minHeight:'100vh', background:'#f9fafb'}},
+    // Header
+    h('div', {style:{background:'linear-gradient(135deg,#DC2626,#B91C1C)', color:'#fff', padding:'32px 20px 60px'}},
+      h('div', {style:{maxWidth:520, margin:'0 auto'}},
+        h('div', {style:{fontSize:13, color:'#fca5a5', marginBottom:6, letterSpacing:1}}, '🇯🇵 SPRING TRIP 2026'),
+        h('div', {style:{fontSize:32, fontWeight:800, letterSpacing:-0.5}}, 'Japan ✦'),
+        h('div', {style:{fontSize:13, color:'#fca5a5', marginTop:6}}, 'Apr 1–10 · Tokyo · Hakone · Kyoto · Osaka')
+      )
+    ),
+    // Tab bar
+    h('div', {style:{maxWidth:520, margin:'-36px auto 0', padding:'0 16px'}},
+      h('div', {style:{background:'#fff', borderRadius:20, padding:6, display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:4, boxShadow:'0 4px 24px rgba(0,0,0,0.10)'}},
+        TABS.map(function(t) {
+          var active = tab === t.id;
+          return h('button', {key:t.id, onClick:function(){setTab(t.id);}, style:{padding:'10px 4px', borderRadius:14, border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:3, transition:'all 0.15s', background:active?'#DC2626':'transparent', color:active?'#fff':'#6b7280'}},
+            h('span', {style:{fontSize:16}}, t.icon),
+            h('span', {style:{fontSize:11, fontWeight:600}}, t.label)
+          );
+        })
+      )
+    ),
+    // Content
+    h('div', {style:{maxWidth:520, margin:'0 auto', padding:'20px 16px 48px'}},
+      tab==='people'    && h(PeopleTab,    {people:people, setPeople:setPeople}),
+      tab==='itinerary' && h(ItineraryTab, {itinerary:itinerary}),
+      tab==='expenses'  && h(ExpensesTab,  {expenses:expenses, setExpenses:setExpenses, people:people}),
+      tab==='places'    && h(PlacesTab,    {places:places, setPlaces:setPlaces})
+    )
+  );
 }
 
-createRoot(document.getElementById('root')).render(html`<${App}/>`);
+ReactDOM.createRoot(document.getElementById('root')).render(h(App, null));
 </script>
 </body>
 </html>
